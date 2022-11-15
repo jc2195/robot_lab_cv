@@ -6,8 +6,16 @@ import numpy as np
 fig, ax = plt.subplots(1, 2, figsize=(18, 6), dpi=100)
 
 ## Read
-img1 = cv2.imread("Lab_big.jpg")
+img1 = cv2.imread("real_test.jpg")
 img2 = cv2.imread("Lab_big.jpg")
+
+bottom_case = img1[120:1200, 110:1200]
+large_gear = img1[100:450, 1450:1780]
+small_gear = img1[950:1150, 1510:1700]
+top_case = img1[1300:2300,110:1200]
+
+
+#%%
 
 gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
 
