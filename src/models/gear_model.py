@@ -25,7 +25,7 @@ class Gear:
         outer_contour = Contours.getContourByArea(self.image, self.metadata.AREA_CUTOFF)
 
         centre, main_radius = cv2.minEnclosingCircle(outer_contour)
-        main_radius -= 15
+        main_radius -= 16
 
         blank_image = np.full((self.image.shape[0], self.image.shape[1]), 0, dtype=np.uint8)
         img1 = cv2.circle(blank_image.copy(),(int(centre[0]),int(centre[1])), int(main_radius), 20, 2)
@@ -42,7 +42,7 @@ class Gear:
         if self.teeth == self.metadata.TEETH_COUNT:
             self.status["code"] = 0
             self.status["message"] = "Pass"
-        elif self.teeth < 2:
+        elif self.teeth < 10:
             self.status["code"] = 1
             self.status["message"] = "Worn gear"
         else:
