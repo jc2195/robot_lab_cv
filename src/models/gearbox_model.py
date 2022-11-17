@@ -14,7 +14,7 @@ Components = SimpleNamespace(
         LEFT_HOLE_BINARY_THRESHOLD = 150,
         RIGHT_HOLE_BINARY_THRESHOLD = 150,
         HOLE_CONTOUR_AREA_MIN = 4000,
-        HOLE_CONTOUR_AREA_MAX = 6000,
+        HOLE_CONTOUR_AREA_MAX = 7000,
         CASING_DIAMETER_SPEC = 100,
         HOLE_DIAMETER_SPEC = 8.2,
         HOLE_DIAMETER_TOLERANCE = 0.5,
@@ -23,7 +23,7 @@ Components = SimpleNamespace(
     BOTTOM_CASING = SimpleNamespace(
         MASTER_LOCATION = (1300,2300,100,1100),
         LEFT_HOLE_LOCATION = (440,550,360,470),
-        RIGHT_HOLE_LOCATION = (445,555,550,660),
+        RIGHT_HOLE_LOCATION = (445,555,555,665),
         MASTER_BINARY_THRESHOLD = 220,
         LEFT_HOLE_BINARY_THRESHOLD = 15,
         RIGHT_HOLE_BINARY_THRESHOLD = 15,
@@ -35,7 +35,7 @@ Components = SimpleNamespace(
         LOGGING_NAME = "Bottom Casing"
     ),
     SMALL_GEAR = SimpleNamespace(
-        MASTER_LOCATION = (1000,1160,1460,1620),
+        MASTER_LOCATION = (990,1160,1460,1630),
         MASTER_BINARY_THRESHOLD = 70,
         AREA_CUTOFF = 5000,
         TEETH_COUNT = 14,
@@ -71,12 +71,15 @@ class Gearbox:
         return img_grey
 
     def inspect(self):
-        start_time = time.time()
-        self.image = self.prepareImage(self.filename)
-        self.populateComponents()
-        for component in self.components:
-            self.components[component].inspect()
-        self.inspection_time = time.time() - start_time
+        try:
+            start_time = time.time()
+            self.image = self.prepareImage(self.filename)
+            self.populateComponents()
+            for component in self.components:
+                self.components[component].inspect()
+            self.inspection_time = time.time() - start_time
+        except:
+            print('FATAL INSPECTION ERROR')
 
     def report(self):
         print("\033[4m" + "Running:" + "\033[0m" + "\033[94m" + " " + self.filename + "\033[0m")

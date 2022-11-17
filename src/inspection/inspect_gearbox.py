@@ -7,7 +7,8 @@ test_files = [
     'experiments/set3x_notooth_rot.jpg',
     'experiments/set4x_worn.jpg',
     'experiments/set5x.jpg',
-    'experiments/set6x.jpg'
+    'experiments/set6x.jpg',
+    'experiments/set7x_bighole_smallnotooth.jpg'
 ]
 
 for image in test_files:

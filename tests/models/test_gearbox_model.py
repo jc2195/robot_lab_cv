@@ -58,10 +58,10 @@ class TestSet3x_notooth:
     def test_bottom_casing_passes(self, gearbox):
         assert gearbox.components["Bottom Casing"].status["code"] == 0
 
-    def test_small_gear_passes(self, gearbox):
+    def test_small_gear_fails(self, gearbox):
         assert gearbox.components["Small Gear"].status["code"] == 2
 
-    def test_large_gear_passes(self, gearbox):
+    def test_large_gear_fails(self, gearbox):
         assert gearbox.components["Large Gear"].status["code"] == 2
 
 class TestSet3x_notooth_rot:
@@ -79,10 +79,10 @@ class TestSet3x_notooth_rot:
     def test_bottom_casing_passes(self, gearbox):
         assert gearbox.components["Bottom Casing"].status["code"] == 0
 
-    def test_small_gear_passes(self, gearbox):
+    def test_small_gear_fails(self, gearbox):
         assert gearbox.components["Small Gear"].status["code"] == 2
 
-    def test_large_gear_passes(self, gearbox):
+    def test_large_gear_fails(self, gearbox):
         assert gearbox.components["Large Gear"].status["code"] == 2
 
 class TestSet4x_worn:
@@ -100,10 +100,10 @@ class TestSet4x_worn:
     def test_bottom_casing_passes(self, gearbox):
         assert gearbox.components["Bottom Casing"].status["code"] == 0
 
-    def test_small_gear_passes(self, gearbox):
+    def test_small_gear_fails(self, gearbox):
         assert gearbox.components["Small Gear"].status["code"] == 1
 
-    def test_large_gear_passes(self, gearbox):
+    def test_large_gear_fails(self, gearbox):
         assert gearbox.components["Large Gear"].status["code"] == 1
 
 class TestSet5x:
@@ -144,6 +144,27 @@ class TestSet6x:
 
     def test_small_gear_passes(self, gearbox):
         assert gearbox.components["Small Gear"].status["code"] == 0
+
+    def test_large_gear_passes(self, gearbox):
+        assert gearbox.components["Large Gear"].status["code"] == 0
+
+class TestSet7x_bighole_smallnotooth:
+    "Both holes on both casings too large and tooth missing from small gear"
+
+    @pytest.fixture
+    def gearbox(self):
+        gearbox = Gearbox('tests/images/raw/set7x_bighole_smallnotooth.jpg')
+        gearbox.inspect()
+        return gearbox
+
+    def test_top_casing_fails(self, gearbox):
+        assert gearbox.components["Top Casing"].status["code"] == 3
+
+    def test_bottom_casing_fails(self, gearbox):
+        assert gearbox.components["Bottom Casing"].status["code"] == 3
+
+    def test_small_gear_fails(self, gearbox):
+        assert gearbox.components["Small Gear"].status["code"] == 2
 
     def test_large_gear_passes(self, gearbox):
         assert gearbox.components["Large Gear"].status["code"] == 0
