@@ -18,7 +18,7 @@ def run_experiments(filename):
     ############# Image Input #############
 
     ############# Top Casing #############
-    img_top_casing = img_grey[150:1200, 50:1150]
+    img_top_casing = img_grey[175:1175, 100:1100]
     ret, img_top_casing_binary = cv2.threshold(img_top_casing,150,255,cv2.THRESH_BINARY)
 
     contours, hierarchy = cv2.findContours(img_top_casing_binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
@@ -29,18 +29,37 @@ def run_experiments(filename):
         area = cv2.contourArea(contour)
         if 500000 < area:
             outer_contour = contour
-        if 4000 < area < 5600:
-            contour_list.append(contour)
 
     (x,y),main_radius = cv2.minEnclosingCircle(outer_contour)
-    each_pixel = 50 / main_radius
+    each_pixel_bottom_casing = 50 / main_radius
 
     diameters = []
 
-    for i in range(len(contour_list)):
-        (x,y),radius = cv2.minEnclosingCircle(contour_list[i])
-        hole_diameter = radius * 2 * each_pixel
-        diameters.append(hole_diameter)
+    left_hole = img_top_casing[460:570, 340:450]
+    ret, left_hole_binary = cv2.threshold(left_hole,150,255,cv2.THRESH_BINARY)
+    contours, hierarchy = cv2.findContours(left_hole_binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    contour_list = []
+    outer_contour_left = None
+    outer_contour_right = None
+    for contour in contours:
+        area = cv2.contourArea(contour)
+        if 4000 < area < 6000:
+            outer_contour_left = contour
+    centre,main_radius_left_hole = cv2.minEnclosingCircle(outer_contour_left)
+    diameters.append(main_radius_left_hole * 2 * each_pixel_bottom_casing)
+
+    right_hole = img_top_casing[460:570, 540:650]
+    ret, right_hole_binary = cv2.threshold(right_hole,150,255,cv2.THRESH_BINARY)
+    contours, hierarchy = cv2.findContours(right_hole_binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    contour_list = []
+    outer_contour_left = None
+    outer_contour_right = None
+    for contour in contours:
+        area = cv2.contourArea(contour)
+        if 4000 < area < 6000:
+            outer_contour_right = contour
+    centre,main_radius_right_hole = cv2.minEnclosingCircle(outer_contour_right)
+    diameters.append(main_radius_right_hole * 2 * each_pixel_bottom_casing)
 
     top_casing_error = False
 
@@ -158,7 +177,6 @@ def run_experiments(filename):
     contour_list = []
     outer_contour = None
     for contour in contours:
-        approx = cv2.approxPolyDP(contour, 0.01 * cv2.arcLength(contour, True), True)
         area = cv2.contourArea(contour)
         if 40000 < area:
             outer_contour = contour
