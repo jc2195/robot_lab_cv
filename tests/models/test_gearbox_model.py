@@ -6,7 +6,7 @@ class TestSet1x:
 
     @pytest.fixture
     def gearbox(self):
-        gearbox = Gearbox('tests/images/set1x.jpg')
+        gearbox = Gearbox('tests/images/raw/set1x.jpg')
         gearbox.inspect()
         return gearbox
 
@@ -27,7 +27,7 @@ class TestSet2x:
 
     @pytest.fixture
     def gearbox(self):
-        gearbox = Gearbox('tests/images/set2x.jpg')
+        gearbox = Gearbox('tests/images/raw/set2x.jpg')
         gearbox.inspect()
         return gearbox
 
@@ -48,7 +48,7 @@ class TestSet3x_notooth:
 
     @pytest.fixture
     def gearbox(self):
-        gearbox = Gearbox('tests/images/set3x_notooth.jpg')
+        gearbox = Gearbox('tests/images/raw/set3x_notooth.jpg')
         gearbox.inspect()
         return gearbox
 
@@ -69,7 +69,7 @@ class TestSet3x_notooth_rot:
 
     @pytest.fixture
     def gearbox(self):
-        gearbox = Gearbox('tests/images/set3x_notooth_rot.jpg')
+        gearbox = Gearbox('tests/images/raw/set3x_notooth_rot.jpg')
         gearbox.inspect()
         return gearbox
 
@@ -90,7 +90,7 @@ class TestSet4x_worn:
 
     @pytest.fixture
     def gearbox(self):
-        gearbox = Gearbox('tests/images/set4x_worn.jpg')
+        gearbox = Gearbox('tests/images/raw/set4x_worn.jpg')
         gearbox.inspect()
         return gearbox
 
@@ -111,7 +111,7 @@ class TestSet5x:
 
     @pytest.fixture
     def gearbox(self):
-        gearbox = Gearbox('tests/images/set5x.jpg')
+        gearbox = Gearbox('tests/images/raw/set5x.jpg')
         gearbox.inspect()
         return gearbox
 
@@ -132,7 +132,7 @@ class TestSet6x:
 
     @pytest.fixture
     def gearbox(self):
-        gearbox = Gearbox('tests/images/set6x.jpg')
+        gearbox = Gearbox('tests/images/raw/set6x.jpg')
         gearbox.inspect()
         return gearbox
 
