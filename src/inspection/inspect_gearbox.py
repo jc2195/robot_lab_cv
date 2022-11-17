@@ -6,7 +6,7 @@ class InspectionProcedure:
         self.filename = "images/live/0.jpg"
         self.gearbox = None
 
-    def begin(self):
+    def inspect(self):
         PiCamera.takePicture()
         self.gearbox = Gearbox(self.filename)
         self.gearbox.inspect()
