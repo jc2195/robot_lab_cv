@@ -1,17 +1,24 @@
 from ..models.gearbox_model import Gearbox
+from ..helpers.hardware import PiCamera
 
-test_files = [
-    'experiments/set1x.jpg',
-    'experiments/set2x.jpg',
-    'experiments/set3x_notooth.jpg',
-    'experiments/set3x_notooth_rot.jpg',
-    'experiments/set4x_worn.jpg',
-    'experiments/set5x.jpg',
-    'experiments/set6x.jpg',
-    'experiments/set7x_bighole_smallnotooth.jpg'
-]
+class InspectionProcedure:
+    def __init__(self):
+        self.filename = "images/live/0.jpg"
+        self.gearbox = None
 
-for image in test_files:
-    gearbox = Gearbox(image)
-    gearbox.inspect()
-    gearbox.report()
+    def begin(self):
+        PiCamera.takePicture()
+        self.gearbox = Gearbox(self.filename)
+        self.gearbox.inspect()
+        self.gearbox.validate()
+        self.gearbox.report()
+        output = self.retrieveValidationVector(self.gearbox.passing_parts)
+        return output
+
+    def retrieveValidationVector(self, report):
+        output = []
+        output.append(report["Top Casing"])
+        output.append(report["Bottom Casing"])
+        output.append(report["Small Gear"])
+        output.append(report["Large Gear"])
+        return output

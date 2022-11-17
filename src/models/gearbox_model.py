@@ -56,6 +56,12 @@ class Gearbox:
         self.image = None
         self.components = None
         self.inspection_time = None
+        self.passing_parts = {
+            Components.TOP_CASING.LOGGING_NAME: 0,
+            Components.BOTTOM_CASING.LOGGING_NAME: 0,
+            Components.SMALL_GEAR.LOGGING_NAME: 0,
+            Components.LARGE_GEAR.LOGGING_NAME: 0
+        }
 
     def populateComponents(self):
         self.components = {
@@ -80,6 +86,11 @@ class Gearbox:
             self.inspection_time = time.time() - start_time
         except:
             print('FATAL INSPECTION ERROR')
+
+    def validate(self):
+        for component in self.components:
+            if self.components[component].status["code"] == 0:
+                self.passing_parts[component] = 1
 
     def report(self):
         print("\033[4m" + "Running:" + "\033[0m" + "\033[94m" + " " + self.filename + "\033[0m")
