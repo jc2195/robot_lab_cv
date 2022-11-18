@@ -22,3 +22,4 @@ class PiCamera:
         camera = picamera.PiCamera()
         camera.resolution = (3200, 2400)
         camera.capture("images/live/0.jpg")
+        camera.close()
