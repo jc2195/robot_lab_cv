@@ -30,9 +30,10 @@ class Contours:
     def getContourByArea(image, minArea = -float('Inf'), maxArea = float('Inf')):
         contours, hierarchy = cv2.findContours(image, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
         outer_contour = None
+        getArea = cv2.contourArea
 
         for contour in contours:
-            area = cv2.contourArea(contour)
+            area = getArea(contour)
             if minArea < area < maxArea:
                 outer_contour = contour
                 break

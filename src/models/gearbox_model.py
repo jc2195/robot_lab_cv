@@ -4,15 +4,16 @@ from .casing_model import Casing
 import cv2
 from types import SimpleNamespace
 import time
+from threading import Thread
+from multiprocessing.pool import ThreadPool
 
 Components = SimpleNamespace(
     TOP_CASING = SimpleNamespace(
-        MASTER_LOCATION = (175,1175,100,1100),
-        LEFT_HOLE_LOCATION = (460,570,340,450),
-        RIGHT_HOLE_LOCATION = (460,570,540,650),
+        MASTER_LOCATION = (100,1250,50,1150),
+        LEFT_HOLE_LOCATION = (470,620,350,500),
+        RIGHT_HOLE_LOCATION = (470,620,550,700),
         MASTER_BINARY_THRESHOLD = 150,
-        LEFT_HOLE_BINARY_THRESHOLD = 150,
-        RIGHT_HOLE_BINARY_THRESHOLD = 150,
+        HOLE_BINARY_THRESHOLD = 150,
         HOLE_CONTOUR_AREA_MIN = 4000,
         HOLE_CONTOUR_AREA_MAX = 7000,
         CASING_DIAMETER_SPEC = 100,
@@ -21,12 +22,11 @@ Components = SimpleNamespace(
         LOGGING_NAME = "Top Casing"
     ),
     BOTTOM_CASING = SimpleNamespace(
-        MASTER_LOCATION = (1300,2300,100,1100),
-        LEFT_HOLE_LOCATION = (440,550,360,470),
-        RIGHT_HOLE_LOCATION = (445,555,555,665),
+        MASTER_LOCATION = (1200,2350,50,1170),
+        LEFT_HOLE_LOCATION = (480,630,400,550),
+        RIGHT_HOLE_LOCATION = (480,630,600,750),
         MASTER_BINARY_THRESHOLD = 220,
-        LEFT_HOLE_BINARY_THRESHOLD = 15,
-        RIGHT_HOLE_BINARY_THRESHOLD = 15,
+        HOLE_BINARY_THRESHOLD = 9,
         HOLE_CONTOUR_AREA_MIN = 500,
         HOLE_CONTOUR_AREA_MAX = 1500,
         CASING_DIAMETER_SPEC = 100,
@@ -35,14 +35,14 @@ Components = SimpleNamespace(
         LOGGING_NAME = "Bottom Casing"
     ),
     SMALL_GEAR = SimpleNamespace(
-        MASTER_LOCATION = (990,1160,1460,1630),
+        MASTER_LOCATION = (920,1130,1430,1640),
         MASTER_BINARY_THRESHOLD = 70,
         AREA_CUTOFF = 5000,
         TEETH_COUNT = 14,
         LOGGING_NAME = "Small Gear"
     ),
     LARGE_GEAR = SimpleNamespace(
-        MASTER_LOCATION = (140,490,1350,1700),
+        MASTER_LOCATION = (50,460,1330,1720),
         MASTER_BINARY_THRESHOLD = 100,
         AREA_CUTOFF = 40000,
         TEETH_COUNT = 28,
@@ -51,10 +51,15 @@ Components = SimpleNamespace(
 )
 
 class Gearbox:
-    def __init__(self, filename):
-        self.filename = filename
+    def __init__(self):
+        self.filename = None
         self.image = None
-        self.components = None
+        self.components = {
+            Components.TOP_CASING.LOGGING_NAME: Casing(Components.TOP_CASING),
+            Components.BOTTOM_CASING.LOGGING_NAME: Casing(Components.BOTTOM_CASING),
+            Components.SMALL_GEAR.LOGGING_NAME: Gear(Components.SMALL_GEAR),
+            Components.LARGE_GEAR.LOGGING_NAME: Gear(Components.LARGE_GEAR)
+        }
         self.inspection_time = None
         self.passing_parts = {
             Components.TOP_CASING.LOGGING_NAME: 0,
@@ -62,30 +67,25 @@ class Gearbox:
             Components.SMALL_GEAR.LOGGING_NAME: 0,
             Components.LARGE_GEAR.LOGGING_NAME: 0
         }
-
-    def populateComponents(self):
-        self.components = {
-            Components.TOP_CASING.LOGGING_NAME: Casing(self.image, Components.TOP_CASING),
-            Components.BOTTOM_CASING.LOGGING_NAME: Casing(self.image, Components.BOTTOM_CASING),
-            Components.SMALL_GEAR.LOGGING_NAME: Gear(self.image, Components.SMALL_GEAR),
-            Components.LARGE_GEAR.LOGGING_NAME: Gear(self.image, Components.LARGE_GEAR)
-        }
+        self.pool = ThreadPool(4)
 
     def prepareImage(self, filename):
-        img_rgb = cv2.imread(filename)
-        img_grey = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY)
-        return img_grey
+        self.image = cv2.imread(filename)
+        self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2GRAY)
 
-    def inspect(self):
-        try:
-            start_time = time.time()
-            self.image = self.prepareImage(self.filename)
-            self.populateComponents()
-            for component in self.components:
-                self.components[component].inspect()
-            self.inspection_time = time.time() - start_time
-        except:
-            print('FATAL INSPECTION ERROR')
+    def inspectComponent(self, component):
+        component.inspect(self.image)
+
+    def inspect(self, filename):
+        self.refresh(filename)
+        # try:
+        start_time = time.time()
+        self.pool.map(func=self.inspectComponent, iterable=self.components.values())
+        self.inspection_time = (time.time() - start_time) * 1000
+        self.validate()
+        self.report()
+        # except:
+        #     print('FATAL INSPECTION ERROR')
 
     def validate(self):
         for component in self.components:
@@ -95,12 +95,22 @@ class Gearbox:
     def report(self):
         print("\033[4m" + "Running:" + "\033[0m" + "\033[94m" + " " + self.filename + "\033[0m")
 
-        for component in self.components:
-            if self.components[component].status["code"] == 0:
-                print("\033[95m" + self.components[component].metadata.LOGGING_NAME + ": " + "\033[0m" + "\033[92m" + "PASS" + "\033[0m")
+        for component in self.components.values():
+            if component.status["code"] == 0:
+                print("\033[95m" + component.metadata.LOGGING_NAME + ": " + "\033[0m" + "\033[92m" + "PASS" + "\033[0m")
             else:
-                print("\033[95m" + self.components[component].metadata.LOGGING_NAME + ": " + "\033[0m" + "\033[91m" + "FAIL" + "\033[0m")
+                print("\033[95m" + component.metadata.LOGGING_NAME + ": " + "\033[0m" + "\033[91m" + "FAIL" + "\033[0m")
 
-        print("\033[1m" + "Runtime: " + "\033[0m" + "\033[93m" + f"{self.inspection_time:.3f}" + " seconds" + "\033[0m")
+        print("\033[1m" + "Runtime: " + "\033[0m" + "\033[93m" + f"{self.inspection_time:.3f}" + " ms" + "\033[0m")
         print("\n")
 
+    def refresh(self, filename):
+        self.filename = filename
+        self.prepareImage(filename)
+        self.inspection_time = None
+        self.passing_parts = {
+            Components.TOP_CASING.LOGGING_NAME: 0,
+            Components.BOTTOM_CASING.LOGGING_NAME: 0,
+            Components.SMALL_GEAR.LOGGING_NAME: 0,
+            Components.LARGE_GEAR.LOGGING_NAME: 0
+        }
