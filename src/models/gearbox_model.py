@@ -88,7 +88,7 @@ class Gearbox:
                 self.passing_parts[component] = 1
 
     def report(self):
-        print("\033[4m" + "Running:" + "\033[0m" + "\033[94m" + " " + self.filename + "\033[0m")
+        print("\033[4m" + "Running:" + "\033[0m" + "\033[94m" + " " + "1" + "\033[0m")
 
         for component in self.components.values():
             if component.status["code"] == 0:
