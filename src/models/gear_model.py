@@ -15,8 +15,8 @@ class Gear:
             "message": "Inspection incomplete"
         }
 
-    def prepareImage(self, metadata, threshold):
-        self.image = ImageManipulation.trimImage(self.master_image, metadata.MASTER_LOCATION)
+    def prepareImage(self, threshold):
+        self.image = ImageManipulation.trimImage(self.master_image, self.metadata.MASTER_LOCATION)
         self.image = ImageManipulation.binaryFilter(self.image, threshold, 255)
         self.image = ImageManipulation.morphologyOpen(self.image)
 
@@ -49,15 +49,16 @@ class Gear:
             self.status["message"] = "Missing teeth"
 
     def inspect(self, image):
-        self.refresh(image)
+        self.master_image = image
+        self.refresh()
         try:
-            self.prepareImage(self.metadata, self.metadata.MASTER_BINARY_THRESHOLD)
+            self.prepareImage(self.metadata.MASTER_BINARY_THRESHOLD)
             self.getNumTeeth()
             self.getStatus()
 
             if self.status["code"] != 0:
                 try:
-                    self.prepareImage(self.metadata, self.metadata.MASTER_BINARY_THRESHOLD + 30)
+                    self.prepareImage(self.metadata.MASTER_BINARY_THRESHOLD + 30)
                     self.getNumTeeth()
                     self.getStatus()
                 except:
@@ -67,8 +68,7 @@ class Gear:
 
         return self.status
 
-    def refresh(self, master_image):
-        self.master_image = master_image
+    def refresh(self):
         self.image = None
         self.teeth = 0
         self.status = {

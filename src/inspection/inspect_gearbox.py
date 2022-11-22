@@ -1,14 +1,14 @@
 from ..models.gearbox_model import Gearbox
-# from ..helpers.hardware import PiCamera
+from ..helpers.hardware import Camera
 
 class InspectionProcedure:
     def __init__(self):
-        self.filename = "images/live/0.jpg"
         self.gearbox = Gearbox()
+        self.camera = Camera()
 
     def inspect(self):
-        # PiCamera.takePicture()
-        self.gearbox.inspect(self.filename)
+        self.camera.takePicture()
+        self.gearbox.inspect(self.camera.image_trimmed)
         return self.retrieveValidationVector(self.gearbox.passing_parts)
 
     def retrieveValidationVector(self, report):

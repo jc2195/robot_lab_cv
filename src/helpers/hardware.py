@@ -1,5 +1,6 @@
 import automationhat
-import picamera
+from picamera import PiCamera
+import numpy as np
 
 class AutomationHat:
     def getTriggerSignal():
@@ -17,9 +18,16 @@ class AutomationHat:
         automationhat.relay.one.write(results[2])
         automationhat.relay.two.write(results[3])
 
-class PiCamera:
+class Camera:
+    def __init__(self):
+        self.camera = PiCamera()
+        self.camera.resolution = (3200, 2400)
+        self.image = np.empty((2400, 3200, 0), dtype=np.uint8)
+        self.image_trimmed = np.empty((1760, 2350), dtype=np.uint8)
+
     def takePicture():
-        camera = picamera.PiCamera()
-        camera.resolution = (3200, 2400)
-        camera.capture("images/live/0.jpg")
-        camera.close()
+        try:
+            self.camera.capture(self.image, "yuv")
+        except IOError:
+            pass
+        self.image_trimmed = self.image[0:2350, 0:1760]

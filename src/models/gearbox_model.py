@@ -4,7 +4,6 @@ from .casing_model import Casing
 import cv2
 from types import SimpleNamespace
 import time
-from threading import Thread
 from multiprocessing.pool import ThreadPool
 
 Components = SimpleNamespace(
@@ -52,7 +51,6 @@ Components = SimpleNamespace(
 
 class Gearbox:
     def __init__(self):
-        self.filename = None
         self.image = None
         self.components = {
             Components.TOP_CASING.LOGGING_NAME: Casing(Components.TOP_CASING),
@@ -69,23 +67,20 @@ class Gearbox:
         }
         self.pool = ThreadPool(4)
 
-    def prepareImage(self, filename):
-        self.image = cv2.imread(filename)
-        self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2GRAY)
-
     def inspectComponent(self, component):
         component.inspect(self.image)
 
-    def inspect(self, filename):
-        self.refresh(filename)
-        # try:
-        start_time = time.time()
-        self.pool.map(func=self.inspectComponent, iterable=self.components.values())
-        self.inspection_time = (time.time() - start_time) * 1000
-        self.validate()
-        self.report()
-        # except:
-        #     print('FATAL INSPECTION ERROR')
+    def inspect(self, image):
+        self.image = image
+        self.refresh()
+        try:
+            start_time = time.time()
+            self.pool.map(func=self.inspectComponent, iterable=self.components.values())
+            self.inspection_time = (time.time() - start_time) * 1000
+            self.validate()
+            self.report()
+        except:
+            print('FATAL INSPECTION ERROR')
 
     def validate(self):
         for component in self.components:
@@ -104,9 +99,7 @@ class Gearbox:
         print("\033[1m" + "Runtime: " + "\033[0m" + "\033[93m" + f"{self.inspection_time:.3f}" + " ms" + "\033[0m")
         print("\n")
 
-    def refresh(self, filename):
-        self.filename = filename
-        self.prepareImage(filename)
+    def refresh(self):
         self.inspection_time = None
         self.passing_parts = {
             Components.TOP_CASING.LOGGING_NAME: 0,
