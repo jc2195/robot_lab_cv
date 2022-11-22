@@ -3,7 +3,7 @@ from ..helpers.hardware import Camera
 import cv2
 
 class InspectionProcedure:
-    def __init__(self, image):
+    def __init__(self):
         self.gearbox = Gearbox()
         self.camera = Camera()
 
