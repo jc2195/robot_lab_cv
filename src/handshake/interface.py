@@ -13,11 +13,13 @@ def plcInterface():
                 break
         AutomationHat.busyOn()
         print("Busy is ON")
+        inspection_procedure.takePicture()
         result = inspection_procedure.inspect()
         AutomationHat.flipPassing(result)
         print("Results sent")
         AutomationHat.busyOff()
         print("Busy is OFF")
+        inspection_procedure.upload()
         while True:
             if AutomationHat.getTriggerSignal() == 0:
                 print("Trigger is OFF")

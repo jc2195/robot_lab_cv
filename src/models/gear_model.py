@@ -1,6 +1,6 @@
 from ..helpers.cv import ImageManipulation, Contours
-import cv2
 import numpy as np
+import cv2
 
 class Gear:
     def __init__(self, metadata):

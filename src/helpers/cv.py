@@ -1,5 +1,5 @@
-import cv2
 import numpy as np
+import cv2
 
 class ImageManipulation:
     def trimImage(image, boundary):

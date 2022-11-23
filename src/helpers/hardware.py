@@ -1,5 +1,5 @@
-import automationhat
 from picamera import PiCamera
+import automationhat
 import numpy as np
 
 class AutomationHat:
@@ -22,12 +22,13 @@ class Camera:
     def __init__(self):
         self.camera = PiCamera()
         self.camera.resolution = (3200, 2400)
-        self.image = np.empty((2400, 3200, 0), dtype=np.uint8)
+        self.image = np.empty((2400, 3200), dtype=np.uint8)
         self.image_trimmed = np.empty((1760, 2350), dtype=np.uint8)
 
     def takePicture():
         try:
             self.camera.capture(self.image, "yuv")
+            print("Picture Taken\n")
         except IOError:
             pass
         self.image_trimmed = self.image[0:2350, 0:1760]

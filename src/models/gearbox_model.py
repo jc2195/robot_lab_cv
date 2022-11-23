@@ -1,10 +1,9 @@
 from .gear_model import Gear
 from .casing_model import Casing
-
-import cv2
-from types import SimpleNamespace
-import time
 from multiprocessing.pool import ThreadPool
+from types import SimpleNamespace
+import cv2
+import time
 
 Components = SimpleNamespace(
     TOP_CASING = SimpleNamespace(
@@ -58,12 +57,33 @@ class Gearbox:
             Components.SMALL_GEAR.LOGGING_NAME: Gear(Components.SMALL_GEAR),
             Components.LARGE_GEAR.LOGGING_NAME: Gear(Components.LARGE_GEAR)
         }
-        self.inspection_time = None
         self.passing_parts = {
             Components.TOP_CASING.LOGGING_NAME: 0,
             Components.BOTTOM_CASING.LOGGING_NAME: 0,
             Components.SMALL_GEAR.LOGGING_NAME: 0,
             Components.LARGE_GEAR.LOGGING_NAME: 0
+        }
+        self.status = {
+            "code": 99,
+            "message": "Inspection incomplete"
+        }
+        self.status_conditions = {
+            "[1, 1, 1, 1]": [0, "All components passed"],
+            "[1, 1, 1, 0]": [1, "Large gear failed"],
+            "[1, 1, 0, 1]": [2, "Small gear failed"],
+            "[1, 1, 0, 0]": [3, "Small gear and large gear failed"],
+            "[1, 0, 1, 1]": [4, "Bottom casing failed"],
+            "[1, 0, 1, 0]": [5, "Bottom casing and large gear failed"],
+            "[1, 0, 0, 1]": [6, "Bottom casing and small gear failed"],
+            "[1, 0, 0, 0]": [7, "Bottom casing, small gear and large gear failed"],
+            "[0, 1, 1, 1]": [8, "Top casing failed"],
+            "[0, 1, 1, 0]": [9, "Top casing and large gear failed"],
+            "[0, 1, 0, 1]": [10, "Top casing and small gear failed"],
+            "[0, 1, 0, 0]": [11, "Top casing, small gear and large gear failed"],
+            "[0, 0, 1, 1]": [12, "Top casing and bottom casing failed"],
+            "[0, 0, 1, 0]": [13, "Top casing, bottom casing and large gear failed"],
+            "[0, 0, 0, 1]": [14, "Top casing, bottom casing and small gear failed"],
+            "[0, 0, 0, 0]": [15, "All components failed"],
         }
         self.pool = ThreadPool(4)
 
@@ -74,10 +94,9 @@ class Gearbox:
         self.image = image
         self.refresh()
         try:
-            start_time = time.time()
             self.pool.map(func=self.inspectComponent, iterable=self.components.values())
-            self.inspection_time = (time.time() - start_time) * 1000
             self.validate()
+            self.getStatus()
             self.report()
         except:
             print('FATAL INSPECTION ERROR')
@@ -87,23 +106,30 @@ class Gearbox:
             if self.components[component].status["code"] == 0:
                 self.passing_parts[component] = 1
 
-    def report(self):
-        print("\033[4m" + "Running:" + "\033[0m" + "\033[94m" + " " + "1" + "\033[0m")
+    def getStatus(self):
+        self.status["code"] = self.status_conditions[str(list(self.passing_parts.values()))][0]
+        self.status["message"] = self.status_conditions[str(list(self.passing_parts.values()))][1]
 
+    def report(self):
         for component in self.components.values():
             if component.status["code"] == 0:
-                print("\033[95m" + component.metadata.LOGGING_NAME + ": " + "\033[0m" + "\033[92m" + "PASS" + "\033[0m")
+                print("\033[95m" + component.metadata.LOGGING_NAME + ": " + "\033[0m" + "\033[92m" + "PASS" + "\033[0m" + "\033[0m" + f" (Code {component.status['code']})")
             else:
-                print("\033[95m" + component.metadata.LOGGING_NAME + ": " + "\033[0m" + "\033[91m" + "FAIL" + "\033[0m")
-
-        print("\033[1m" + "Runtime: " + "\033[0m" + "\033[93m" + f"{self.inspection_time:.3f}" + " ms" + "\033[0m")
-        print("\n")
+                print("\033[95m" + component.metadata.LOGGING_NAME + ": " + "\033[0m" + "\033[91m" + "FAIL" + "\033[0m" + f" (Code {component.status['code']})")
+        
+        if self.status["code"] == 0:
+            print("\033[95m" + "Gearbox" + ": " + "\033[0m" + "\033[92m" + "PASS" + "\033[0m" + f" (Code {self.status['code']})")
+        else:
+            print("\033[95m" + 'Gearbox:' + ": " + "\033[0m" + "\033[91m" + "FAIL" + "\033[0m" + "\033[0m" + f" (Code {self.status['code']})")
 
     def refresh(self):
-        self.inspection_time = None
         self.passing_parts = {
             Components.TOP_CASING.LOGGING_NAME: 0,
             Components.BOTTOM_CASING.LOGGING_NAME: 0,
             Components.SMALL_GEAR.LOGGING_NAME: 0,
             Components.LARGE_GEAR.LOGGING_NAME: 0
+        }
+        self.status = {
+            "code": 99,
+            "message": "Inspection incomplete"
         }

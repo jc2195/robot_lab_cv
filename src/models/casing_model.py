@@ -1,5 +1,4 @@
 from ..helpers.cv import ImageManipulation, Contours
-from multiprocessing.pool import ThreadPool
 import cv2
 
 class Casing:
@@ -23,7 +22,6 @@ class Casing:
             "code": 99,
             "message": "Inspection incomplete"
         }
-        self.pool = ThreadPool()
 
     def prepareImage(self):
         self.image = ImageManipulation.trimImage(self.master_image, self.metadata.MASTER_LOCATION)
