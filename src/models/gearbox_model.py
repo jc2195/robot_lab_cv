@@ -2,8 +2,6 @@ from .gear_model import Gear
 from .casing_model import Casing
 from multiprocessing.pool import ThreadPool
 from types import SimpleNamespace
-import cv2
-import time
 
 Components = SimpleNamespace(
     TOP_CASING = SimpleNamespace(
