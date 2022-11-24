@@ -1,11 +1,11 @@
 from ..helpers.cv import ImageManipulation, Contours
-import cv2
 import numpy as np
+import cv2
 
 class Gear:
-    def __init__(self, master_image, metadata):
+    def __init__(self, metadata):
         self.metadata = metadata
-        self.master_image = master_image
+        self.master_image = None
         self.type = metadata.LOGGING_NAME
         self.location = metadata.MASTER_LOCATION
         self.image = None
@@ -15,11 +15,10 @@ class Gear:
             "message": "Inspection incomplete"
         }
 
-    def prepareImage(self, image, metadata, threshold):
-        image = ImageManipulation.trimImage(image, metadata.MASTER_LOCATION)
-        image = ImageManipulation.binaryFilter(image, threshold, 255)
-        image = ImageManipulation.morphologyOpen(image)
-        return image
+    def prepareImage(self, threshold):
+        self.image = ImageManipulation.trimImage(self.master_image, self.metadata.MASTER_LOCATION)
+        self.image = ImageManipulation.binaryFilter(self.image, threshold, 255)
+        self.image = ImageManipulation.morphologyOpen(self.image)
 
     def getNumTeeth(self):
         outer_contour = Contours.getContourByArea(self.image, self.metadata.AREA_CUTOFF)
@@ -49,15 +48,17 @@ class Gear:
             self.status["code"] = 2
             self.status["message"] = "Missing teeth"
 
-    def inspect(self):
+    def inspect(self, image):
+        self.master_image = image
+        self.refresh()
         try:
-            self.image = self.prepareImage(self.master_image, self.metadata, self.metadata.MASTER_BINARY_THRESHOLD)
+            self.prepareImage(self.metadata.MASTER_BINARY_THRESHOLD)
             self.getNumTeeth()
             self.getStatus()
 
             if self.status["code"] != 0:
                 try:
-                    self.image = self.prepareImage(self.master_image, self.metadata, self.metadata.MASTER_BINARY_THRESHOLD + 30)
+                    self.prepareImage(self.metadata.MASTER_BINARY_THRESHOLD + 30)
                     self.getNumTeeth()
                     self.getStatus()
                 except:
@@ -66,3 +67,11 @@ class Gear:
             pass
 
         return self.status
+
+    def refresh(self):
+        self.image = None
+        self.teeth = 0
+        self.status = {
+            "code": 99,
+            "message": "Inspection incomplete"
+        }
