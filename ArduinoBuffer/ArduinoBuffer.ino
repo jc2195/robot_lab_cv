@@ -62,7 +62,7 @@ void loop()
     }
   } else {
     // in feeding mode
-    if (irDropOffPrev && !irDropOff) {
+    if (!irDropOffPrev && irDropOff) {
       Serial.println("FEEDING MODE");
       Serial.println(numGears);
       Serial.println("New gear dropped off");
@@ -80,5 +80,5 @@ void loop()
   irPickUpPrev = irPickUp;
   irDropOffPrev = irDropOff;
 
-  delay(1000);
+  delay(500);
 }
