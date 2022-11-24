@@ -20,7 +20,6 @@ class InspectionProcedure:
         self.image = self.image[0:2350, 0:1760, 0]
         self.epochtime = None
         self.inspection_time = None
-        self.gearbox_code = 99
         self.pool = ThreadPool(2)
         self.s3_queue = Queue()
         self.db_queue = Queue()
@@ -59,17 +58,17 @@ class InspectionProcedure:
     def inspect(self):
         print("\033[4m" + "Running:" + "\033[0m" + "\033[94m" + " " + f"{self.epochtime}" + "\033[0m")
         self.gearbox.inspect(self.image)
+        self.inspection_time = (time.time() - self.epochtime) * 1000
         print("\033[1m" + "Runtime: " + "\033[0m" + "\033[93m" + f"{self.inspection_time:.3f}" + " ms" + "\033[0m")
         print("\n")
-        self.inspection_time = (time.time() - self.epochtime) * 1000
         return self.retrieveValidationVector(self.gearbox.passing_parts)
 
     def retrieveSqlData(self):
-        return (self.epochtime, self.gearbox_code, self.gearbox.components["Top Casing"].status["code"], 
+        return (self.epochtime, self.gearbox.status["code"], self.gearbox.components["Top Casing"].status["code"], 
         self.gearbox.components["Bottom Casing"].status["code"], self.gearbox.components["Large Gear"].status["code"], self.gearbox.components["Small Gear"].status["code"], 
         self.gearbox.components["Top Casing"].hole_diameters["left"], self.gearbox.components["Top Casing"].hole_diameters["right"], 
         self.gearbox.components["Bottom Casing"].hole_diameters["left"], self.gearbox.components["Bottom Casing"].hole_diameters["right"], 
-        self.inspection_time, f's3://{os.environ["S3_BUCKET_NAME"]}/{str(self.epochtime)}.jpg',)
+        self.inspection_time, f'https://{os.environ["S3_BUCKET_NAME"]}.s3.{os.environ["AWS_REGION_NAME"]}.amazonaws.com/{str(int(self.epochtime * 100000000))}.jpg',)
 
     def retrieveValidationVector(self, report):
         output = []
@@ -81,7 +80,7 @@ class InspectionProcedure:
 
 # inspection_procedure = InspectionProcedure()
 # total = 0
-# for i in range(10):
+# for i in range(5):
 #     print("\n")
 #     start = time.time()
 #     inspection_procedure.takePicture()
@@ -89,4 +88,4 @@ class InspectionProcedure:
 #     total += time.time() - start
 #     inspection_procedure.upload()
 #     time.sleep(1)
-# print(total/10)
+# print(total/5)

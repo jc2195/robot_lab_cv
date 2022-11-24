@@ -20,7 +20,7 @@ class S3:
         image = np.array(image)
         data_serial = cv2.imencode('.jpg', image)[1].tobytes()
         try:
-            response = self.resource.Object(os.environ["S3_BUCKET_NAME"], str(int(filename * 100000000)) + ".jpg").put(Body=data_serial, ContentType="image/JPG")
+            response = self.resource.Object(os.environ["S3_BUCKET_NAME"], str(int(filename * 100000000)) + ".jpg").put(Body=data_serial, ContentType="image/JPG", ACL='public-read')
             print(f"{filename} written S3")
         except ClientError as e:
             logging.error(e)
