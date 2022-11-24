@@ -25,10 +25,11 @@ class Camera:
         self.image = np.empty((2400, 3200), dtype=np.uint8)
         self.image_trimmed = np.empty((1760, 2350), dtype=np.uint8)
 
-    def takePicture():
+    def takePicture(self):
         try:
             self.camera.capture(self.image, "yuv")
-            print("Picture Taken\n")
+            print("Picture Taken")
+            print("\n")
         except IOError:
             pass
         self.image_trimmed = self.image[0:2350, 0:1760]

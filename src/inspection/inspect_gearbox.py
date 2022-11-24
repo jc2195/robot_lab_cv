@@ -15,9 +15,9 @@ class InspectionProcedure:
         self.s3 = S3()
         self.db = Database()
         self.camera = Camera()
-        self.image = cv2.imread("images/live/0.jpg")
-        self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2YUV)
-        self.image = self.image[0:2350, 0:1760, 0]
+        # self.image = cv2.imread("images/live/0.jpg")
+        # self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2YUV)
+        # self.image = self.image[0:2350, 0:1760, 0]
         self.epochtime = None
         self.inspection_time = None
         self.pool = ThreadPool(2)
@@ -35,10 +35,9 @@ class InspectionProcedure:
     def takePicture(self):
         self.epochtime = time.time()
         self.camera.takePicture()
-        pass
 
     def uploadImage(self):
-        self.s3_queue.put([self.image, self.epochtime])
+        self.s3_queue.put([self.camera.image_trimmed, self.epochtime])
         self.s3_result = self.pool.map_async(func=self.writeToS3, iterable=[self.s3_queue])
 
     def uploadData(self):
@@ -57,7 +56,7 @@ class InspectionProcedure:
 
     def inspect(self):
         print("\033[4m" + "Running:" + "\033[0m" + "\033[94m" + " " + f"{self.epochtime}" + "\033[0m")
-        self.gearbox.inspect(self.image)
+        self.gearbox.inspect(self.camera.image_trimmed)
         self.inspection_time = (time.time() - self.epochtime) * 1000
         print("\033[1m" + "Runtime: " + "\033[0m" + "\033[93m" + f"{self.inspection_time:.3f}" + " ms" + "\033[0m")
         print("\n")
