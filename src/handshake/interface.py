@@ -13,6 +13,10 @@ def plcInterface():
                 break
         AutomationHat.busyOn()
         print("Busy is ON")
+        while True:
+            if AutomationHat.getTriggerSignal() == 0:
+                print("Trigger is OFF")
+                break
         inspection_procedure.takePicture()
         result = inspection_procedure.inspect()
         AutomationHat.flipPassing(result)
@@ -20,10 +24,5 @@ def plcInterface():
         AutomationHat.busyOff()
         print("Busy is OFF")
         inspection_procedure.upload()
-        while True:
-            if AutomationHat.getTriggerSignal() == 0:
-                print("Trigger is OFF")
-                break
-        time.sleep(1)
 
 plcInterface()

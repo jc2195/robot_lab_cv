@@ -33,14 +33,16 @@ Components = SimpleNamespace(
     SMALL_GEAR = SimpleNamespace(
         MASTER_LOCATION = (920,1130,1430,1640),
         MASTER_BINARY_THRESHOLD = 70,
-        AREA_CUTOFF = 5000,
+        AREA_MIN = 5000,
+        AREA_MAX = 15000,
         TEETH_COUNT = 14,
         LOGGING_NAME = "Small Gear"
     ),
     LARGE_GEAR = SimpleNamespace(
         MASTER_LOCATION = (50,460,1330,1720),
         MASTER_BINARY_THRESHOLD = 100,
-        AREA_CUTOFF = 40000,
+        AREA_MIN = 40000,
+        AREA_MAX = 120000,
         TEETH_COUNT = 28,
         LOGGING_NAME = "Large Gear"
     )

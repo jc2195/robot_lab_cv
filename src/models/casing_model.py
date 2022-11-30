@@ -30,30 +30,30 @@ class Casing:
         self.outer_image = ImageManipulation.binaryFilter(self.image, self.metadata.MASTER_BINARY_THRESHOLD, 255)
         self.getMmPerPixel()
 
-    def prepareLeftHoleImage(self):
+    def prepareLeftHoleImage(self, threshold):
         self.hole_images["left"] = ImageManipulation.trimImage(self.image, self.metadata.LEFT_HOLE_LOCATION)
         if self.metadata.LOGGING_NAME == "Bottom Casing":
             self.hole_images["left"] = cv2.equalizeHist(self.hole_images["left"])
-        self.hole_images["left"] = ImageManipulation.binaryFilter(self.hole_images["left"], self.metadata.HOLE_BINARY_THRESHOLD, 255)
+        self.hole_images["left"] = ImageManipulation.binaryFilter(self.hole_images["left"], threshold, 255)
 
-    def prepareRightHoleImage(self):
+    def prepareRightHoleImage(self, threshold):
         self.hole_images["right"] = ImageManipulation.trimImage(self.image, self.metadata.RIGHT_HOLE_LOCATION)
         if self.metadata.LOGGING_NAME == "Bottom Casing":
             self.hole_images["right"] = cv2.equalizeHist(self.hole_images["right"])
-        self.hole_images["right"] = ImageManipulation.binaryFilter(self.hole_images["right"], self.metadata.HOLE_BINARY_THRESHOLD, 255)
+        self.hole_images["right"] = ImageManipulation.binaryFilter(self.hole_images["right"], threshold, 255)
 
-    def prepareHoleImages(self):
-        self.prepareLeftHoleImage()
-        self.prepareRightHoleImage()
+    def prepareHoleImages(self, threshold):
+        self.prepareLeftHoleImage(threshold)
+        self.prepareRightHoleImage(threshold)
 
     def getMmPerPixel(self):
         outer_contour = Contours.getContourByArea(self.outer_image, 500000)
         (x,y),main_radius = cv2.minEnclosingCircle(outer_contour)
         self.mm_per_pixel = (self.metadata.CASING_DIAMETER_SPEC / 2) / main_radius
 
-    def getHoleDiameters(self):
+    def getHoleDiameters(self, min_area, max_area):
         for label in ["left", "right"]:
-            outer_contour = Contours.getContourByArea(self.hole_images[label], self.metadata.HOLE_CONTOUR_AREA_MIN, self.metadata.HOLE_CONTOUR_AREA_MAX)
+            outer_contour = Contours.getContourByArea(self.hole_images[label], min_area, max_area)
             centre, hole_radius = cv2.minEnclosingCircle(outer_contour)
             self.hole_diameters[label] = hole_radius * 2 * self.mm_per_pixel
 
@@ -96,11 +96,11 @@ class Casing:
             self.prepareImage()
             self.prepareOuterImage()
             try:
-                self.prepareHoleImages()
-                self.getHoleDiameters()
+                self.prepareHoleImages(self.metadata.HOLE_BINARY_THRESHOLD)
+                self.getHoleDiameters(self.metadata.HOLE_CONTOUR_AREA_MIN, self.metadata.HOLE_CONTOUR_AREA_MAX)
             except:
                 if self.metadata.LOGGING_NAME == "Bottom Casing":
-                    self.prepareHoleImages(self.metadata.HOLE_BINARY_THRESHOLD + 50)
+                    self.prepareHoleImages(self.metadata.HOLE_BINARY_THRESHOLD + 25)
                     self.getHoleDiameters(self.metadata.HOLE_CONTOUR_AREA_MIN * 2, self.metadata.HOLE_CONTOUR_AREA_MAX * 2)
             self.getStatus()
         except:
