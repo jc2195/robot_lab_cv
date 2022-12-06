@@ -100,8 +100,8 @@ class Casing:
                 self.getHoleDiameters(self.metadata.HOLE_CONTOUR_AREA_MIN, self.metadata.HOLE_CONTOUR_AREA_MAX)
             except:
                 if self.metadata.LOGGING_NAME == "Bottom Casing":
-                    self.prepareHoleImages(self.metadata.HOLE_BINARY_THRESHOLD + 25)
-                    self.getHoleDiameters(self.metadata.HOLE_CONTOUR_AREA_MIN * 2, self.metadata.HOLE_CONTOUR_AREA_MAX * 2)
+                    self.prepareHoleImages(self.metadata.HOLE_BINARY_THRESHOLD + 40)
+                    self.getHoleDiameters(self.metadata.HOLE_CONTOUR_AREA_MIN * 10, self.metadata.HOLE_CONTOUR_AREA_MAX * 6)
             self.getStatus()
         except:
             pass
