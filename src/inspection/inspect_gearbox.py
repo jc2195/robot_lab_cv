@@ -34,7 +34,7 @@ class InspectionProcedure:
 
     def takePicture(self):
         self.epochtime = time.time()
-        # self.camera.takePicture()
+        self.camera.takePicture()
 
     def uploadImage(self):
         self.s3_queue.put([self.image, self.epochtime])
@@ -77,14 +77,14 @@ class InspectionProcedure:
         output.append(report["Large Gear"])
         return output
 
-inspection_procedure = InspectionProcedure()
-total = 0
-for i in range(5):
-    print("\n")
-    start = time.time()
-    inspection_procedure.takePicture()
-    inspection_procedure.inspect()
-    total += time.time() - start
-    inspection_procedure.upload()
-    time.sleep(1)
-print(total/5)
+# inspection_procedure = InspectionProcedure()
+# total = 0
+# for i in range(5):
+#     print("\n")
+#     start = time.time()
+#     inspection_procedure.takePicture()
+#     inspection_procedure.inspect()
+#     total += time.time() - start
+#     inspection_procedure.upload()
+#     time.sleep(1)
+# print(total/5)
