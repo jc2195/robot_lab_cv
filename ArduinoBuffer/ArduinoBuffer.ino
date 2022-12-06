@@ -1,15 +1,15 @@
 
-#define irPickUpPin1  A3
-#define irDropOffPin1 A4
+#define irPickUpPin1  A4
+#define irDropOffPin1 A3
 
 #define irPickUpPin2  A5
 #define irDropOffPin2 A10
 
-#define irPickUpPin3  A11
-#define irDropOffPin3 A12
+#define irPickUpPin3  A14
+#define irDropOffPin3 A13
 
-#define irPickUpPin4  A13
-#define irDropOffPin4 A14
+#define irPickUpPin4  A12
+#define irDropOffPin4 A11
 
 // Define pin connections & motor's steps per revolution
 #define stepPin1  54
@@ -47,6 +47,8 @@ bool irDropOffPrev[] = {false, false, false, false};
 bool irDropOff[] = {false, false, false, false};
 
 int stepsPerRevolution = 200;
+int motorDist[] = {199, 199, 30, 60};
+int motorOffsetDist[] = {15, 15, 80, 70};
 
 void turnMotor(int stepPin, int dirPin, int enPin,
                int delaySpeed, int dist, int dir) {
@@ -57,12 +59,15 @@ void turnMotor(int stepPin, int dirPin, int enPin,
   if (dir == -1) {
     digitalWrite(dirPin, LOW);
   }
-  for(int x = 0; x < stepsPerRevolution*dist; x++)
+  for(int d = 0; d < dist; d++)
   {
-    digitalWrite(stepPin, HIGH);
-    delayMicroseconds(delaySpeed);
-    digitalWrite(stepPin, LOW);
-    delayMicroseconds(delaySpeed);
+    for(int x = 0; x < stepsPerRevolution; x++)
+    {
+      digitalWrite(stepPin, HIGH);
+      delayMicroseconds(delaySpeed);
+      digitalWrite(stepPin, LOW);
+      delayMicroseconds(delaySpeed);
+    }
   }
   digitalWrite(enPin, HIGH);
 }
@@ -75,28 +80,44 @@ void setup()
     pinMode(stepPins[i], OUTPUT);
     pinMode(dirPins[i], OUTPUT);
     pinMode(enPins[i], OUTPUT);
+
+    digitalWrite(enPins[i], HIGH);
   }
 
+
   for(int i = 0; i < 4; i++) {
-    for(int j = 0; j < 100; j++) {
+    for(int j = 0; j < 10; j++) {
       irPickUpThreshold[i] += analogRead(irPickUpPins[i]);
-      irDropOffThreshold[i] += analogRead(irDropOffPins[i]);
     }
-    irPickUpThreshold[i] /= 100*2;
-    irDropOffThreshold[i] /= 100*2;
+    irPickUpThreshold[i] /= 10;
+    irPickUpThreshold[i] += 1;
+    if (irPickUpThreshold[i] < 5) {
+      irPickUpThreshold[i] *= 2; 
+    }
+    else {
+      irPickUpThreshold[i] *= 1.05;
+    }
+
+    irDropOffThreshold[i] = irPickUpThreshold[i];
       
     Serial.print("irThresholds: ");
     Serial.print(i);
     Serial.print(",");
-    Serial.println(irPickUpThreshold[i]);
+    Serial.print(irPickUpThreshold[i]);
+    Serial.print(",");
+    Serial.println(irDropOffThreshold[i]);
   }
 }
+
 
 void loop()
 {
   for(int i = 0; i < 4; i++) {
     irPickUp[i] = analogRead(irPickUpPins[i]) < irPickUpThreshold[i];
     irDropOff[i] = analogRead(irDropOffPins[i]) < irDropOffThreshold[i];
+
+    Serial.println(analogRead(irDropOffPins[i]));
+    Serial.println(analogRead(irPickUpPins[i]));
     
     if (eatingMode[i]) {
       // PickUp goes from full to empty -- new gear was picked up
@@ -107,10 +128,10 @@ void loop()
         Serial.println("New gear picked up");
         numParts[i]--;
         if (numParts[i] == 0) {
-          turnMotor(stepPins[i], dirPins[i], enPins[i], 1000, 4, -1);
+          turnMotor(stepPins[i], dirPins[i], enPins[i], 50, 3*motorDist[i] + motorOffsetDist[i], -1);
           eatingMode[i] = false;
         } else {
-          turnMotor(stepPins[i], dirPins[i], enPins[i], 1000, 1, 1); // push forward by 1
+          turnMotor(stepPins[i], dirPins[i], enPins[i], 100, motorDist[i], 1);
         }  
       }
     } else {
@@ -121,10 +142,18 @@ void loop()
         Serial.println(numParts[i]);
         Serial.println("New gear dropped off");
         numParts[i]++;
+        // ADD MASSIVE DELAY FOR INTEGRATION TESTING
         if (numParts[i] < 4) {
-          turnMotor(stepPins[i], dirPins[i], enPins[i], 1000, 1, 1);
-          turnMotor(stepPins[i], dirPins[i], enPins[i], 1000, 1, -1); // push forward and pull back
+          turnMotor(stepPins[i], dirPins[i], enPins[i], 100, motorOffsetDist[i] + (4-numParts[i])*motorDist[i], 1);
+          turnMotor(stepPins[i], dirPins[i], enPins[i], 50, motorOffsetDist[i] + (4-numParts[i])*motorDist[i], -1);
+          //turnMotor(stepPins[i], dirPins[i], enPins[i], 100, 1.05*motorDist[i], 1);
+          //turnMotor(stepPins[i], dirPins[i], enPins[i], 100, 1.05 *motorDist[i], -1); // push forward and pull back
         } else {
+          if(i >= 2) { // more shove for gears
+            turnMotor(stepPins[i], dirPins[i], enPins[i], 100, motorOffsetDist[i]-2, 1);
+          } else {
+            turnMotor(stepPins[i], dirPins[i], enPins[i], 100, motorOffsetDist[i]-10, 1);
+          }
           Serial.println("full!");
           eatingMode[i] = true;
         }
