@@ -29,7 +29,6 @@
 #define enPin4    24
 
 int numParts[] = {4, 4, 4, 4};
-bool eatingMode[] = {true, true, true, true};
 
 byte stepPins[] = {stepPin1, stepPin2, stepPin3, stepPin4};
 byte dirPins[] = {dirPin1, dirPin2, dirPin3, dirPin4};
@@ -47,8 +46,8 @@ bool irDropOffPrev[] = {true, true, true, true};
 bool irDropOff[] = {true, true, true, true};
 
 int stepsPerRevolution = 200;
-int motorDist[] = {199, 199, 30, 60};
-int motorOffsetDist[] = {15, 15, 80, 70};
+int motorDist[] = {199, 199, 60, 36};
+int motorOffsetDist[] = {15, 15, 60, 167};
 
 void turnMotor(int stepPin, int dirPin, int enPin,
                int delaySpeed, int dist, int dir) {
@@ -90,11 +89,11 @@ void setup()
     }
     irPickUpThreshold[i] /= 10;
     irPickUpThreshold[i] += 1;
-    if (irPickUpThreshold[i] < 5) {
-      irPickUpThreshold[i] *= 2; 
+    if (irPickUpThreshold[i] < 100) {
+      irPickUpThreshold[i] = 85; 
     }
     else {
-      irPickUpThreshold[i] *= 1.05;
+      irPickUpThreshold[i] *= 1.15;
     }
 
     irDropOffThreshold[i] = irPickUpThreshold[i];
@@ -118,55 +117,63 @@ void setup()
 
 void loop()
 {
-  for(int i = 0; i < 2; i++) {
+  Serial.print(analogRead(irPickUpPins[0]));
+  Serial.print(",");
+  Serial.print(analogRead(irPickUpPins[1]));
+  Serial.print(",");
+  Serial.print(analogRead(irPickUpPins[2]));
+  Serial.print(",");
+  Serial.println(analogRead(irPickUpPins[3]));
+  for(int i = 0; i < 4; i++) {
     irPickUp[i] = analogRead(irPickUpPins[i]) < irPickUpThreshold[i];
     irDropOff[i] = analogRead(irDropOffPins[i]) < irDropOffThreshold[i];
-    
-    //if (eatingMode[i]) {
-      // PickUp goes from full to empty -- new gear was picked up
-      if (irPickUpPrev[i] && !irPickUp[i]) {
-        numParts[i]--;
-        Serial.print("Buffer is ");
-        Serial.print(i);
-        Serial.print(" with ");
-        Serial.println(numParts[i]);
-        Serial.println("New gear picked up");
-        if (numParts[i] == 0) {
-          //turnMotor(stepPins[i], dirPins[i], enPins[i], 50, 3*motorDist[i] + motorOffsetDist[i], -1);
-          eatingMode[i] = false;
-          Serial.println("NO MORE PARTS IN BUFFER");
+
+    // PickUp goes from full to empty -- new gear was picked up
+    if (irPickUpPrev[i] && !irPickUp[i]) {
+      numParts[i]--;
+      Serial.print("Buffer is ");
+      Serial.print(i);
+      Serial.print(" with ");
+      Serial.println(numParts[i]);
+      Serial.println("New gear picked up");
+      
+      if (numParts[i] <= 0) {
+        Serial.println("NO MORE PARTS IN BUFFER");
+      } else if (numParts[i] > 4) {
+        Serial.println("TOO MANY PARTS IN BUFFER, ASSUMING ERROR");
+      } else {
+        delay(2500);
+        turnMotor(stepPins[i], dirPins[i], enPins[i], 100, motorOffsetDist[i] + (4-numParts[i])*motorDist[i], 1);
+        turnMotor(stepPins[i], dirPins[i], enPins[i], 50,  motorOffsetDist[i] + (4-numParts[i])*motorDist[i], -1);
+      }  
+    }
+
+    if (!irDropOffPrev[i] && irDropOff[i]) {
+      numParts[i]++;
+      Serial.print("Buffer is ");
+      Serial.print(i);
+      Serial.print(" with ");
+      Serial.println(numParts[i]);
+      Serial.println("New gear dropped off");
+      
+      // ADD MASSIVE DELAY FOR INTEGRATION TESTING
+      if (numParts[i] <= 0) {
+        Serial.println("ZERO/NEGATIVE PARTS IN BUFFER AFTER REPLENISHMENT, ASSUMING ERROR"); 
+      } else if (numParts[i] <= 4) {
+        delay(2500);
+        turnMotor(stepPins[i], dirPins[i], enPins[i], 100, motorOffsetDist[i] + (4-numParts[i])*motorDist[i], 1);
+        turnMotor(stepPins[i], dirPins[i], enPins[i], 50,  motorOffsetDist[i] + (4-numParts[i])*motorDist[i], -1);
+      } /*else if (numParts[i] == 4) {
+        if(i >= 2) { // more shove for gears
+          turnMotor(stepPins[i], dirPins[i], enPins[i], 100, motorOffsetDist[i]-2, 1);
         } else {
-          turnMotor(stepPins[i], dirPins[i], enPins[i], 100, motorOffsetDist[i] + (4-numParts[i])*motorDist[i], 1);
-          turnMotor(stepPins[i], dirPins[i], enPins[i], 50,  motorOffsetDist[i] + (4-numParts[i])*motorDist[i], -1);
-        }  
-      }
-    //} else {
-      // in feeding mode
-      if (!irDropOffPrev[i] && irDropOff[i]) {
-        numParts[i]++;
-        Serial.print("Buffer is ");
-        Serial.print(i);
-        Serial.print(" with ");
-        Serial.println(numParts[i]);
-        Serial.println("New gear picked up");
-        Serial.println("New gear dropped off");
-        // ADD MASSIVE DELAY FOR INTEGRATION TESTING
-        if (numParts[i] < 4) {
-          turnMotor(stepPins[i], dirPins[i], enPins[i], 100, motorOffsetDist[i] + (4-numParts[i])*motorDist[i], 1);
-          turnMotor(stepPins[i], dirPins[i], enPins[i], 50,  motorOffsetDist[i] + (4-numParts[i])*motorDist[i], -1);
-          //turnMotor(stepPins[i], dirPins[i], enPins[i], 100, 1.05*motorDist[i], 1);
-          //turnMotor(stepPins[i], dirPins[i], enPins[i], 100, 1.05 *motorDist[i], -1); // push forward and pull back
-        } else {
-          if(i >= 2) { // more shove for gears
-            turnMotor(stepPins[i], dirPins[i], enPins[i], 100, motorOffsetDist[i]-2, 1);
-          } else {
-            turnMotor(stepPins[i], dirPins[i], enPins[i], 100, motorOffsetDist[i]-10, 1);
-          }
-          Serial.println("full!");
-          eatingMode[i] = true;
+          turnMotor(stepPins[i], dirPins[i], enPins[i], 100, motorOffsetDist[i]-10, 1);
         }
+        Serial.println("full!");
+      } */else {
+        Serial.println("TOO MANY PARTS IN BUFFER, ASSUMING ERROR");
       }
-    //}
+    }
   
     irPickUpPrev[i] = irPickUp[i];
     irDropOffPrev[i] = irDropOff[i];
