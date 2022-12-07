@@ -15,9 +15,8 @@ class InspectionProcedure:
         self.s3 = S3()
         self.db = Database()
         self.camera = Camera()
-        # self.image = cv2.imread("experiments/166930071242325536.jpg", cv2.IMREAD_GRAYSCALE)
-        # self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2YUV)
-        # self.image = self.image[0:2350, 0:1760, 0]
+        # self.image = cv2.imread("experiments/final_missing_teeth.jpg", cv2.IMREAD_GRAYSCALE)
+        # self.image = self.image[0:2350, 0:2500]
         self.epochtime = None
         self.inspection_time = None
         self.pool = ThreadPool(2)
@@ -25,6 +24,12 @@ class InspectionProcedure:
         self.db_queue = Queue()
         self.s3_result = None
         self.db_result = None
+        self.result_cache = {
+            "Top Casing": 0,
+            "Bottom Casing": 0,
+            "Small Gear": 0,
+            "Large Gear": 0
+        }
 
     def writeToS3(self, arguments):
         self.s3.writeImage(arguments)
@@ -37,7 +42,7 @@ class InspectionProcedure:
         self.camera.takePicture()
 
     def uploadImage(self):
-        self.s3_queue.put([self.camera.image_trimmed, self.epochtime])
+        self.s3_queue.put([self.image, self.epochtime])
         self.s3_result = self.pool.map_async(func=self.writeToS3, iterable=[self.s3_queue])
 
     def uploadData(self):
@@ -54,12 +59,18 @@ class InspectionProcedure:
         print("\033[1m" + "Runtime: " + "\033[0m" + "\033[93m" + f"{self.inspection_time:.3f}" + " ms" + "\033[0m")
         print("\n")
 
+    def updateResultsCache(self):
+        for key in self.gearbox.passing_parts:
+            if self.gearbox.passing_parts[key] == 0:
+                self.result_cache[key] += 1
+
     def inspect(self):
         print("\033[4m" + "Running:" + "\033[0m" + "\033[94m" + " " + f"{self.epochtime}" + "\033[0m")
-        self.gearbox.inspect(self.camera.image_trimmed)
+        self.gearbox.inspect(self.image)
         self.inspection_time = (time.time() - self.epochtime) * 1000
         print("\033[1m" + "Runtime: " + "\033[0m" + "\033[93m" + f"{self.inspection_time:.3f}" + " ms" + "\033[0m")
         print("\n")
+        self.updateResultsCache()
         return self.retrieveValidationVector(self.gearbox.passing_parts)
 
     def retrieveSqlData(self):
