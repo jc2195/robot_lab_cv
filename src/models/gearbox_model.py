@@ -5,9 +5,9 @@ from types import SimpleNamespace
 
 Components = SimpleNamespace(
     TOP_CASING = SimpleNamespace(
-        MASTER_LOCATION = (100,1250,50,1150),
-        LEFT_HOLE_LOCATION = (470,620,350,500),
-        RIGHT_HOLE_LOCATION = (470,620,550,700),
+        MASTER_LOCATION = (1270,2270,230,1230),
+        LEFT_HOLE_LOCATION = (435,595,310,460),
+        RIGHT_HOLE_LOCATION = (440,600,510,660),
         MASTER_BINARY_THRESHOLD = 150,
         HOLE_BINARY_THRESHOLD = 150,
         HOLE_CONTOUR_AREA_MIN = 4000,
@@ -18,12 +18,12 @@ Components = SimpleNamespace(
         LOGGING_NAME = "Top Casing"
     ),
     BOTTOM_CASING = SimpleNamespace(
-        MASTER_LOCATION = (1200,2350,50,1170),
-        LEFT_HOLE_LOCATION = (480,630,400,550),
-        RIGHT_HOLE_LOCATION = (480,630,600,750),
+        MASTER_LOCATION = (150,1150,210,1210),
+        LEFT_HOLE_LOCATION = (435,585,335,485),
+        RIGHT_HOLE_LOCATION = (430,580,530,680),
         MASTER_BINARY_THRESHOLD = 220,
-        HOLE_BINARY_THRESHOLD = 9,
-        HOLE_CONTOUR_AREA_MIN = 500,
+        HOLE_BINARY_THRESHOLD = 6,
+        HOLE_CONTOUR_AREA_MIN = 300,
         HOLE_CONTOUR_AREA_MAX = 1500,
         CASING_DIAMETER_SPEC = 100,
         HOLE_DIAMETER_SPEC = 8.2,
@@ -31,16 +31,18 @@ Components = SimpleNamespace(
         LOGGING_NAME = "Bottom Casing"
     ),
     SMALL_GEAR = SimpleNamespace(
-        MASTER_LOCATION = (920,1130,1430,1640),
-        MASTER_BINARY_THRESHOLD = 70,
-        AREA_CUTOFF = 5000,
+        MASTER_LOCATION = (910,1120,1745,1950),
+        MASTER_BINARY_THRESHOLD = 80,
+        AREA_MIN = 10000,
+        AREA_MAX = 15000,
         TEETH_COUNT = 14,
         LOGGING_NAME = "Small Gear"
     ),
     LARGE_GEAR = SimpleNamespace(
-        MASTER_LOCATION = (50,460,1330,1720),
+        MASTER_LOCATION = (80,440,1650,2020),
         MASTER_BINARY_THRESHOLD = 100,
-        AREA_CUTOFF = 40000,
+        AREA_MIN = 40000,
+        AREA_MAX = 60000,
         TEETH_COUNT = 28,
         LOGGING_NAME = "Large Gear"
     )

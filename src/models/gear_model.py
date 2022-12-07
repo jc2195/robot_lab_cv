@@ -21,7 +21,7 @@ class Gear:
         self.image = ImageManipulation.morphologyOpen(self.image)
 
     def getNumTeeth(self):
-        outer_contour = Contours.getContourByArea(self.image, self.metadata.AREA_CUTOFF)
+        outer_contour = Contours.getContourByArea(self.image, self.metadata.AREA_MIN, self.metadata.AREA_MAX)
 
         centre, main_radius = cv2.minEnclosingCircle(outer_contour)
         main_radius -= 16
