@@ -27,6 +27,106 @@ class TestAllPass1:
     def test_gearbox_passes(self, gearbox):
         assert gearbox.status["code"] == 0
 
+class TestAllPass2:
+    "No faulty parts"
+
+    @pytest.fixture
+    def gearbox(self):
+        gearbox = Gearbox()
+        image = cv2.imread('tests/images/raw/final_all_good_2.jpg', cv2.IMREAD_GRAYSCALE)
+        gearbox.inspect(image)
+        return gearbox
+
+    def test_top_casing_passes(self, gearbox):
+        assert gearbox.components["Top Casing"].status["code"] == 0
+
+    def test_bottom_casing_passes(self, gearbox):
+        assert gearbox.components["Bottom Casing"].status["code"] == 0
+
+    def test_small_gear_passes(self, gearbox):
+        assert gearbox.components["Small Gear"].status["code"] == 0
+
+    def test_large_gear_passes(self, gearbox):
+        assert gearbox.components["Large Gear"].status["code"] == 0
+
+    def test_gearbox_passes(self, gearbox):
+        assert gearbox.status["code"] == 0
+
+class TestAllPass3:
+    "No faulty parts"
+
+    @pytest.fixture
+    def gearbox(self):
+        gearbox = Gearbox()
+        image = cv2.imread('tests/images/raw/final_all_good_3.jpg', cv2.IMREAD_GRAYSCALE)
+        gearbox.inspect(image)
+        return gearbox
+
+    def test_top_casing_passes(self, gearbox):
+        assert gearbox.components["Top Casing"].status["code"] == 0
+
+    def test_bottom_casing_passes(self, gearbox):
+        assert gearbox.components["Bottom Casing"].status["code"] == 0
+
+    def test_small_gear_passes(self, gearbox):
+        assert gearbox.components["Small Gear"].status["code"] == 0
+
+    def test_large_gear_passes(self, gearbox):
+        assert gearbox.components["Large Gear"].status["code"] == 0
+
+    def test_gearbox_passes(self, gearbox):
+        assert gearbox.status["code"] == 0
+
+class TestBothGearsFailMissingTooth:
+    "Missing tooth on both gears"
+
+    @pytest.fixture
+    def gearbox(self):
+        gearbox = Gearbox()
+        image = cv2.imread('tests/images/raw/final_missing_teeth.jpg', cv2.IMREAD_GRAYSCALE)
+        gearbox.inspect(image)
+        return gearbox
+
+    def test_top_casing_passes(self, gearbox):
+        assert gearbox.components["Top Casing"].status["code"] == 0
+
+    def test_bottom_casing_passes(self, gearbox):
+        assert gearbox.components["Bottom Casing"].status["code"] == 0
+
+    def test_small_gear_passes(self, gearbox):
+        assert gearbox.components["Small Gear"].status["code"] == 2
+
+    def test_large_gear_passes(self, gearbox):
+        assert gearbox.components["Large Gear"].status["code"] == 2
+
+    def test_gearbox_passes(self, gearbox):
+        assert gearbox.status["code"] == 3
+
+class TestBothGearsFailWornTeeth:
+    "Worn teeth on both gears"
+
+    @pytest.fixture
+    def gearbox(self):
+        gearbox = Gearbox()
+        image = cv2.imread('tests/images/raw/final_worn_teeth.jpg', cv2.IMREAD_GRAYSCALE)
+        gearbox.inspect(image)
+        return gearbox
+
+    def test_top_casing_passes(self, gearbox):
+        assert gearbox.components["Top Casing"].status["code"] == 0
+
+    def test_bottom_casing_passes(self, gearbox):
+        assert gearbox.components["Bottom Casing"].status["code"] == 0
+
+    def test_small_gear_passes(self, gearbox):
+        assert gearbox.components["Small Gear"].status["code"] == 1
+
+    def test_large_gear_passes(self, gearbox):
+        assert gearbox.components["Large Gear"].status["code"] == 1
+
+    def test_gearbox_passes(self, gearbox):
+        assert gearbox.status["code"] == 3
+
 class TestTopCasingBottomCasingSmallAndLargeGearFailMissingTooth1:
     "Holes on both casings milled to large, tooth missing on both gears"
 

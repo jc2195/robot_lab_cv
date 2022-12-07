@@ -1,5 +1,5 @@
 Pipfile.lock
-.pytest_cache
+experiments
 .coverage
 __pycache__*
 .env

@@ -15,9 +15,8 @@ class InspectionProcedure:
         self.s3 = S3()
         self.db = Database()
         self.camera = Camera()
-        # self.image = cv2.imread("experiments/166930071242325536.jpg", cv2.IMREAD_GRAYSCALE)
-        # self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2YUV)
-        # self.image = self.image[0:2350, 0:1760, 0]
+        # self.image = cv2.imread("experiments/blank_1.jpg", cv2.IMREAD_GRAYSCALE)
+        # self.image = self.image[0:2350, 0:2500]
         self.epochtime = None
         self.inspection_time = None
         self.pool = ThreadPool(2)
@@ -25,6 +24,12 @@ class InspectionProcedure:
         self.db_queue = Queue()
         self.s3_result = None
         self.db_result = None
+        self.result_cache = {
+            "Top Casing": 0,
+            "Bottom Casing": 0,
+            "Small Gear": 0,
+            "Large Gear": 0
+        }
 
     def writeToS3(self, arguments):
         self.s3.writeImage(arguments)
@@ -37,7 +42,7 @@ class InspectionProcedure:
         self.camera.takePicture()
 
     def uploadImage(self):
-        self.s3_queue.put([self.image, self.epochtime])
+        self.s3_queue.put([self.camera.image_trimmed, self.epochtime])
         self.s3_result = self.pool.map_async(func=self.writeToS3, iterable=[self.s3_queue])
 
     def uploadData(self):
@@ -54,12 +59,18 @@ class InspectionProcedure:
         print("\033[1m" + "Runtime: " + "\033[0m" + "\033[93m" + f"{self.inspection_time:.3f}" + " ms" + "\033[0m")
         print("\n")
 
+    def updateResultsCache(self):
+        for key in self.gearbox.passing_parts:
+            if self.gearbox.passing_parts[key] == 0:
+                self.result_cache[key] += 1
+
     def inspect(self):
         print("\033[4m" + "Running:" + "\033[0m" + "\033[94m" + " " + f"{self.epochtime}" + "\033[0m")
-        self.gearbox.inspect(self.image)
+        self.gearbox.inspect(self.camera.image_trimmed)
         self.inspection_time = (time.time() - self.epochtime) * 1000
         print("\033[1m" + "Runtime: " + "\033[0m" + "\033[93m" + f"{self.inspection_time:.3f}" + " ms" + "\033[0m")
         print("\n")
+        self.updateResultsCache()
         return self.retrieveValidationVector(self.gearbox.passing_parts)
 
     def retrieveSqlData(self):
@@ -70,21 +81,34 @@ class InspectionProcedure:
         self.inspection_time, f'https://{os.environ["S3_BUCKET_NAME"]}.s3.{os.environ["AWS_REGION_NAME"]}.amazonaws.com/{str(int(self.epochtime * 100000000))}.jpg',)
 
     def retrieveValidationVector(self, report):
-        output = []
-        output.append(report["Top Casing"])
-        output.append(report["Bottom Casing"])
-        output.append(report["Small Gear"])
-        output.append(report["Large Gear"])
+        output = [1, 1, 1, 1]
+        total_failing = 0
+        if report["Large Gear"] == 0:
+            if total_failing < 2:
+                output[3] = 0
+                total_failing += 1
+        if report["Small Gear"] == 0:
+            if total_failing < 2:
+                output[2] = 0
+                total_failing += 1
+        if report["Top Casing"] == 0:
+            if total_failing < 2:
+                output[0] = 0
+                total_failing += 1
+        if report["Bottom Casing"] == 0:
+            if total_failing < 2:
+                output[1] = 0
+                total_failing += 1
         return output
 
 # inspection_procedure = InspectionProcedure()
 # total = 0
-# for i in range(5):
+# for i in range(1):
 #     print("\n")
 #     start = time.time()
 #     inspection_procedure.takePicture()
-#     inspection_procedure.inspect()
+#     print(inspection_procedure.inspect())
 #     total += time.time() - start
 #     inspection_procedure.upload()
 #     time.sleep(1)
-# print(total/5)
+# print(total/1)

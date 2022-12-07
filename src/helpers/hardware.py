@@ -6,6 +6,9 @@ class AutomationHat:
     def getTriggerSignal():
         return automationhat.input.one.read()
 
+    def getReplenishSignal():
+        return automationhat.input.three.read()
+
     def busyOn():
         automationhat.output.one.write(0)
 
