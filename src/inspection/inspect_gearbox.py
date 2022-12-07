@@ -37,7 +37,7 @@ class InspectionProcedure:
         self.camera.takePicture()
 
     def uploadImage(self):
-        self.s3_queue.put([self.image, self.epochtime])
+        self.s3_queue.put([self.camera.image_trimmed, self.epochtime])
         self.s3_result = self.pool.map_async(func=self.writeToS3, iterable=[self.s3_queue])
 
     def uploadData(self):
@@ -56,7 +56,7 @@ class InspectionProcedure:
 
     def inspect(self):
         print("\033[4m" + "Running:" + "\033[0m" + "\033[94m" + " " + f"{self.epochtime}" + "\033[0m")
-        self.gearbox.inspect(self.image)
+        self.gearbox.inspect(self.camera.image_trimmed)
         self.inspection_time = (time.time() - self.epochtime) * 1000
         print("\033[1m" + "Runtime: " + "\033[0m" + "\033[93m" + f"{self.inspection_time:.3f}" + " ms" + "\033[0m")
         print("\n")
@@ -79,7 +79,7 @@ class InspectionProcedure:
 
 # inspection_procedure = InspectionProcedure()
 # total = 0
-# for i in range(5):
+# for i in range(1):
 #     print("\n")
 #     start = time.time()
 #     inspection_procedure.takePicture()
@@ -87,4 +87,4 @@ class InspectionProcedure:
 #     total += time.time() - start
 #     inspection_procedure.upload()
 #     time.sleep(1)
-# print(total/5)
+# print(total/1)
