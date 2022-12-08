@@ -85,7 +85,6 @@ class InspectionProcedure:
         print("\033[1m" + "Runtime: " + "\033[0m" + "\033[93m" + f"{self.inspection_time:.3f}" + " ms" + "\033[0m")
         print("\n")
         self.updateResultsCache()
-        print(self.result_cache)
         self.outputDisplayImage()
         return self.retrieveValidationVector(self.gearbox.passing_parts)
 
