@@ -32,34 +32,28 @@ def inspectionBranch(inspection_procedure):
     inspection_procedure.upload()
 
 def replenishBranch(inspection_procedure):
-    AutomationHat.replenishAcknowledgeOn()
-    print("Replenish acknowledge is ON")
-    while True:
-        if AutomationHat.getTriggerSignal() == 1:
-            print("Trigger is ON")
-    AutomationHat.replenishAcknowledgeOff()
-    print("Replenish acknowledge is OFF")
     for part_key in ["Top Casing", "Bottom Casing", "Small Gear", "Large Gear"]:
-        while True:
-            if AutomationHat.getTriggerSignal == 0:
-                print("Trigger is OFF")
-                break
         AutomationHat.replenishAcknowledgeOn()
         print("Replenish acknowledge is ON")
         while True:
-            if AutomationHat.getTriggerSignal == 1:
-                print("Trigger is ON")
+            if AutomationHat.getReplenishTriggerSignal == 0:
+                print("Replenish trigger is OFF")
                 break
         AutomationHat.flipReplenish(inspection_procedure.result_cache[part_key])
+        print("Replenish results sent")
         AutomationHat.replenishAcknowledgeOff()
         print("Replenish acknowledge is OFF")
-    while True:
-        if AutomationHat.getTriggerSignal == 0:
-            print("Trigger is OFF")
-            break
+        while True:
+            if AutomationHat.getReplenishTriggerSignal == 1:
+                print("Replenish trigger is ON")
+                break
+    AutomationHat.replenishAcknowledgeOn()
+    print("Replenish acknowledge is ON")
     while True:
         if AutomationHat.getReplenishTriggerSignal == 0:
             print("Replenish trigger is OFF")
             break
+    AutomationHat.replenishAcknowledgeOff()
+    print("Replenish acknowledge is OFF")
 
 plcInterface()
