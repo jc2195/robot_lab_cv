@@ -1,5 +1,6 @@
 from ..models.gearbox_model import Gearbox
 from ..helpers.hardware import Camera
+from ..helpers.cv import ImageManipulation
 from ..helpers.network import S3, Database
 from dotenv import load_dotenv
 from multiprocessing import Queue
@@ -11,17 +12,21 @@ import os
 class InspectionProcedure:
     def __init__(self):
         load_dotenv()
+        self.inspection_number = 0
         self.gearbox = Gearbox()
         self.s3 = S3()
         self.db = Database()
+        self.image_manipulation = ImageManipulation()
         self.camera = Camera()
         # self.image = cv2.imread("experiments/blank_1.jpg", cv2.IMREAD_GRAYSCALE)
         # self.image = self.image[0:2350, 0:2500]
         self.epochtime = None
         self.inspection_time = None
-        self.pool = ThreadPool(2)
+        self.pool = ThreadPool(3)
+        self.display_image_queue = Queue()
         self.s3_queue = Queue()
         self.db_queue = Queue()
+        self.display_image_result = None
         self.s3_result = None
         self.db_result = None
         self.result_cache = {
@@ -53,6 +58,13 @@ class InspectionProcedure:
         self.uploadImage()
         self.uploadData()
 
+    def writeDisplayImage(self, arguments):
+        self.image_manipulation.displayImageProcessor(arguments)
+
+    def outputDisplayImage(self):
+        self.display_image_queue.put([self.camera.image_trimmed, self.gearbox.passing_parts, self.gearbox.status["code"], self.inspection_time, self.inspection_number])
+        self.display_image_result = self.pool.map_async(func=self.writeDisplayImage, iterable=[self.display_image_queue])
+
     def consoleLog(self):
         print("\033[4m" + "Running:" + "\033[0m" + "\033[94m" + " " + f"{self.epochtime}" + "\033[0m")
         self.gearbox.report()
@@ -66,11 +78,14 @@ class InspectionProcedure:
 
     def inspect(self):
         print("\033[4m" + "Running:" + "\033[0m" + "\033[94m" + " " + f"{self.epochtime}" + "\033[0m")
+        self.inspection_number += 1
+        print("\033[4m" + "Number:" + "\033[0m" + "\033[94m" + " " + f"{self.inspection_number}" + "\033[0m")
         self.gearbox.inspect(self.camera.image_trimmed)
         self.inspection_time = (time.time() - self.epochtime) * 1000
         print("\033[1m" + "Runtime: " + "\033[0m" + "\033[93m" + f"{self.inspection_time:.3f}" + " ms" + "\033[0m")
         print("\n")
         self.updateResultsCache()
+        self.outputDisplayImage()
         return self.retrieveValidationVector(self.gearbox.passing_parts)
 
     def retrieveSqlData(self):
@@ -102,13 +117,18 @@ class InspectionProcedure:
         return output
 
 # inspection_procedure = InspectionProcedure()
+# counter = 0
 # total = 0
-# for i in range(1):
+# for i in range(9):
 #     print("\n")
 #     start = time.time()
 #     inspection_procedure.takePicture()
-#     print(inspection_procedure.inspect())
+#     inspection_procedure.image = cv2.imread(f"images/live/{counter}.jpg", cv2.IMREAD_GRAYSCALE)
+#     inspection_procedure.image = inspection_procedure.image[0:2350, 0:2500]
+#     inspection_procedure.inspect()
+#     # cv2.imwrite("images/live/99.jpg", inspection_procedure.image)
 #     total += time.time() - start
-#     inspection_procedure.upload()
-#     time.sleep(1)
-# print(total/1)
+#     # inspection_procedure.upload()
+#     time.sleep(2)
+#     counter += 1
+# print(total/9)
