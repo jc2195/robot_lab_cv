@@ -49,4 +49,4 @@ class Camera:
             print("\n")
         except IOError:
             pass
-        self.image_trimmed = self.image[0:2350, 0:2350]
+        self.image_trimmed = self.image[0:2350, 0:2500]

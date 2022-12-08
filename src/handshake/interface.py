@@ -1,16 +1,8 @@
 from ..helpers.hardware import AutomationHat
-from ..helpers.display import Viewer
 from ..inspection.inspect_gearbox import InspectionProcedure
-from multiprocessing.pool import Pool
 import time
 
-def runPool(items):
-    viewer = Viewer()
-    viewer.show()
-
 def plcInterface():
-    pool = Pool(1)
-    result = pool.map_async(func=runPool, iterable=[])
     inspection_procedure = InspectionProcedure()
     AutomationHat.busyOff()
     print("Busy is OFF")
