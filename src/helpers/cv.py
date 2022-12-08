@@ -26,6 +26,52 @@ class ImageManipulation:
         else:
             return False
 
+    def displayImagePassFailValues(self, results):
+        pass_fail_values = {}
+        if results["Gearbox"] == 0:
+            results["Gearbox"] = 1
+        else:
+            results["Gearbox"] = 0
+        for part_key in results:
+            if results[part_key] == 0:
+                pass_fail_values[part_key] = ["FAIL", (0, 0, 255)]
+            elif results[part_key] == 1:
+                pass_fail_values[part_key] = ["PASS", (0, 255, 0)]
+        return pass_fail_values
+
+    def displayImageProcessor(self, arguments):
+        inputs = arguments.get()
+        image = inputs[0]
+        results_cache = inputs[1]
+        gearbox_result = inputs[2]
+        inspection_time = inputs[3]
+        number = inputs[4]
+        results_cache["Gearbox"] = gearbox_result
+        vals = self.displayImagePassFailValues(results_cache)
+
+        image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+        image = cv2.putText(image, vals["Bottom Casing"][0], (100, 250), cv2.FONT_HERSHEY_SIMPLEX, 
+                   4, vals["Bottom Casing"][1], 10, cv2.LINE_AA)
+        image = cv2.putText(image, vals["Top Casing"][0], (100, 1400), cv2.FONT_HERSHEY_SIMPLEX, 
+                   4, vals["Top Casing"][1], 10, cv2.LINE_AA)
+        image = cv2.putText(image, vals["Large Gear"][0], (1250, 250), cv2.FONT_HERSHEY_SIMPLEX, 
+                   4, vals["Large Gear"][1], 10, cv2.LINE_AA)
+        image = cv2.putText(image, vals["Small Gear"][0], (1350, 1000), cv2.FONT_HERSHEY_SIMPLEX, 
+                   4, vals["Small Gear"][1], 10, cv2.LINE_AA)
+        image = cv2.putText(image, 'Gearbox:', (1400, 1500), cv2.FONT_HERSHEY_SIMPLEX, 
+                   4, (255, 255, 0), 10, cv2.LINE_AA)
+        image = cv2.putText(image, vals["Gearbox"][0], (2000, 1500), cv2.FONT_HERSHEY_SIMPLEX, 
+                   4, vals["Gearbox"][1], 10, cv2.LINE_AA)
+        image = cv2.putText(image, 'Time: ', (1400, 1650), cv2.FONT_HERSHEY_SIMPLEX, 
+                   4, (255, 255, 0), 10, cv2.LINE_AA)
+        image = cv2.putText(image, f'{inspection_time:.0f}ms', (2000, 1650), cv2.FONT_HERSHEY_SIMPLEX, 
+                   4, (0, 255, 255), 10, cv2.LINE_AA)
+        image = cv2.putText(image, 'Number: ', (1400, 1800), cv2.FONT_HERSHEY_SIMPLEX, 
+                   4, (255, 255, 0), 10, cv2.LINE_AA)
+        image = cv2.putText(image, f'{number}', (2000, 1800), cv2.FONT_HERSHEY_SIMPLEX, 
+                   4, (255, 0, 255), 10, cv2.LINE_AA)
+        cv2.imwrite("images/live/99.jpg", image)
+
 class Contours:
     def getContourByArea(image, minArea = -float('Inf'), maxArea = float('Inf')):
         contours, hierarchy = cv2.findContours(image, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
