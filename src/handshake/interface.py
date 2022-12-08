@@ -6,13 +6,12 @@ def plcInterface():
     inspection_procedure = InspectionProcedure()
     AutomationHat.busyOff()
     print("Busy is OFF")
-    counter = 0
     while True:
         if AutomationHat.getTriggerSignal() == 1:
             print("Trigger is ON")
             inspectionBranch(inspection_procedure)
-        elif AutomationHat.getReplenishSignal() == 1:
-            print("Replenish Trigger is ON")
+        elif AutomationHat.getReplenishTriggerSignal() == 1:
+            print("Replenish trigger is ON")
             replenishBranch(inspection_procedure)
     
 def inspectionBranch(inspection_procedure):
@@ -33,11 +32,34 @@ def inspectionBranch(inspection_procedure):
     inspection_procedure.upload()
 
 def replenishBranch(inspection_procedure):
-    print("Replenishing parts in buffer")
-    # AutomationHat.busyOn()           
-    # while True:
-    #     if AutomationHat.getReplenishSignal() == 0:
-    #         print("Replenish is OFF")
-    #         break
+    AutomationHat.replenishAcknowledgeOn()
+    print("Replenish acknowledge is ON")
+    while True:
+        if AutomationHat.getTriggerSignal() == 1:
+            print("Trigger is ON")
+    AutomationHat.replenishAcknowledgeOff()
+    print("Replenish acknowledge is OFF")
+    for part_key in ["Top Casing", "Bottom Casing", "Small Gear", "Large Gear"]:
+        while True:
+            if AutomationHat.getTriggerSignal == 0:
+                print("Trigger is OFF")
+                break
+        AutomationHat.replenishAcknowledgeOn()
+        print("Replenish acknowledge is ON")
+        while True:
+            if AutomationHat.getTriggerSignal == 1:
+                print("Trigger is ON")
+                break
+        AutomationHat.flipReplenish(inspection_procedure.result_cache[part_key])
+        AutomationHat.replenishAcknowledgeOff()
+        print("Replenish acknowledge is OFF")
+    while True:
+        if AutomationHat.getTriggerSignal == 0:
+            print("Trigger is OFF")
+            break
+    while True:
+        if AutomationHat.getReplenishTriggerSignal == 0:
+            print("Replenish trigger is OFF")
+            break
 
 plcInterface()

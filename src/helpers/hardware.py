@@ -6,7 +6,7 @@ class AutomationHat:
     def getTriggerSignal():
         return automationhat.input.one.read()
 
-    def getReplenishSignal():
+    def getReplenishTriggerSignal():
         return automationhat.input.three.read()
 
     def busyOn():
@@ -14,6 +14,20 @@ class AutomationHat:
 
     def busyOff():
         automationhat.output.one.write(1)
+
+    def replenishAcknowledgeOn():
+        automationhat.relay.two.write(0)
+
+    def replenishAcknowledgeOff():
+        automationhat.relay.two.write(1)
+
+    def flipReplenish(quantity):
+        if quantity == 0:
+            self.flipPassing([1, 1, 1, 1])
+        elif quantity == 1:
+            self.flipPassing([0, 1, 1, 1])
+        elif quantity == 2:
+            self.flipPassing([1, 0, 1, 1])
 
     def flipPassing(results):
         automationhat.output.two.write(results[0])
