@@ -5,6 +5,8 @@ import os
 class Viewer:
     def show(self):
         now = time.time()
+        placeholder = cv2.imread(f"images/live/placeholder.jpg")
+        cv2.imwrite("images/live/99.jpg", placeholder)
         while True:
             if time.time() - now > 0.1:
                 with open("images/live/99.jpg", 'rb') as im :
