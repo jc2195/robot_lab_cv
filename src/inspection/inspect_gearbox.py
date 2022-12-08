@@ -19,7 +19,7 @@ class InspectionProcedure:
         self.image_manipulation = ImageManipulation()
         self.camera = Camera()
         # self.image = cv2.imread("experiments/blank_1.jpg", cv2.IMREAD_GRAYSCALE)
-        # self.image = self.image[0:2350, 0:2500]
+        # self.image = self.image[0:2350, 0:2350]
         self.epochtime = None
         self.inspection_time = None
         self.pool = ThreadPool(3)
@@ -73,7 +73,7 @@ class InspectionProcedure:
 
     def updateResultsCache(self):
         for key in self.gearbox.passing_parts:
-            if self.gearbox.passing_parts[key] == 0:
+            if self.gearbox.passing_parts[key] == 0 and self.result_cache[key] < 2:
                 self.result_cache[key] += 1
 
     def inspect(self):
@@ -85,6 +85,7 @@ class InspectionProcedure:
         print("\033[1m" + "Runtime: " + "\033[0m" + "\033[93m" + f"{self.inspection_time:.3f}" + " ms" + "\033[0m")
         print("\n")
         self.updateResultsCache()
+        print(self.result_cache)
         self.outputDisplayImage()
         return self.retrieveValidationVector(self.gearbox.passing_parts)
 
@@ -124,7 +125,7 @@ class InspectionProcedure:
 #     start = time.time()
 #     inspection_procedure.takePicture()
 #     inspection_procedure.image = cv2.imread(f"images/live/{counter}.jpg", cv2.IMREAD_GRAYSCALE)
-#     inspection_procedure.image = inspection_procedure.image[0:2350, 0:2500]
+#     inspection_procedure.image = inspection_procedure.image[0:2350, 0:2350]
 #     inspection_procedure.inspect()
 #     # cv2.imwrite("images/live/99.jpg", inspection_procedure.image)
 #     total += time.time() - start

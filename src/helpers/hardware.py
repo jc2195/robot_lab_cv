@@ -28,10 +28,6 @@ class AutomationHat:
             self.flipPassing([0, 1, 1, 1])
         elif quantity == 2:
             self.flipPassing([1, 0, 1, 1])
-        elif quantity == 3:
-            self.flipPassing([1, 1, 0, 1])
-        elif quantity == 4:
-            self.flipPassing([1, 1, 1, 0])
 
     def flipPassing(results):
         automationhat.output.two.write(results[0])
@@ -53,4 +49,4 @@ class Camera:
             print("\n")
         except IOError:
             pass
-        self.image_trimmed = self.image[0:2350, 0:2500]
+        self.image_trimmed = self.image[0:2350, 0:2350]
