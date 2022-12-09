@@ -28,14 +28,16 @@ class ImageManipulation:
 
     def displayImagePassFailValues(self, results):
         pass_fail_values = {}
+        total_fail = 0
         if results["Gearbox"] == 0:
             results["Gearbox"] = 1
         else:
             results["Gearbox"] = 0
-        for part_key in results:
-            if results[part_key] == 0:
+        for part_key in ["Large Gear", "Small Gear", "Top Casing", "Bottom Casing"]:
+            if results[part_key] == 0 and total_fail < 2:
                 pass_fail_values[part_key] = ["FAIL", (0, 0, 255)]
-            elif results[part_key] == 1:
+                total_fail += 1
+            else:
                 pass_fail_values[part_key] = ["PASS", (0, 255, 0)]
         return pass_fail_values
 
